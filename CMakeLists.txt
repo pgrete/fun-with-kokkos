@@ -9,7 +9,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(Kokkos_CXX_STANDARD 14 CACHE STRING "CXX standard" FORCE)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/Kokkos Kokkos)
 
 if (Kokkos_ENABLE_CUDA)
   set (Kokkos_ENABLE_CUDA_LAMBDA ON CACHE BOOL
@@ -18,5 +17,7 @@ if (Kokkos_ENABLE_CUDA)
   set (Kokkos_ENABLE_CUDA_CONSTEXPR ON CACHE BOOL
        "Enable relaxed constexpressions in CUDA" FORCE)
 endif()
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/Kokkos Kokkos)
 
 add_subdirectory(src)
