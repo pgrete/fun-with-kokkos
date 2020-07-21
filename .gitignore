@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Object and binary directories
+build*/
+bin/
+debug/
+
+# User editor files
+.vscode
+compile_commands.jsonbin

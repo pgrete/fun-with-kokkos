@@ -1,0 +1,2 @@
+Checks: '-*,kokkos-*,performance-*,readability-*,mpi-*,modernize-*,misc-*,cppcoreguidelines-*,bugprone-*,google-*'
+FormatStyle: file
