@@ -41,6 +41,12 @@ auto main(int argc, char *argv[]) -> int {
     }
   }
 
+  // sanity checks
+  if ((num_streams < num_threads) || (num_streams % num_threads != 0)) {
+    cout << "Please use a multiple of num_threads for num_streams" << std::endl;
+    exit(1);
+  }
+
   int num_blocks = // total number of blocks
       (size_mesh / size_block) * (size_mesh / size_block) * (size_mesh / size_block);
 
@@ -64,6 +70,40 @@ auto main(int argc, char *argv[]) -> int {
       exec_spaces.push_back(DevExecSpace());
     }
 
+  int complete_cnt = 0;
+  auto f = [&](int thread_id, int num_threads) {
+    while (complete_cnt != num_blocks) {
+      for (auto i = 0; i < num_blocks; ++i) {
+        // Workaround to ensure that the same thread works on the same MeshBlocks within
+        // a cycle. Trying to circumvent problem in setting scratch pad memory, which is
+        // not thread safe.
+        if (i % num_threads != thread_id) {
+          continue;
+        }
+
+        // in principle here's a call to a task list with multiple tasks for each block
+        // now it's just a single simple kernel
+
+            cout << "[" << thread_id << "] taking care of block " << i << std::endl << std::flush;
+              Kokkos::atomic_increment(&complete_cnt);
+      }
+    }
+  };
+
+for (auto cycle = 0; cycle < num_cycles; cycle++) {
+    cout << "Staring cycle " << cycle << std::endl;
+  for (auto stage = 0; stage < num_stages; stage++) {
+#ifdef KOKKOS_ENABLE_OPENMP
+  // using a fixed number of partitions (= nthreads) with each partition of size 1,
+  // i.e., one thread per partition and this thread is the master thread
+  Kokkos::OpenMP::partition_master(f, num_threads, 1);
+#else
+  f(0, 1);
+#endif
+Kokkos::fence();
+complete_cnt = 0;
+  }
+}
     if (num_streams > 1) {
       for (auto n = 0; n < num_streams; n++) {
         SpaceInstance<DevExecSpace>::destroy(exec_spaces[n]);
